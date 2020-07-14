@@ -28,6 +28,7 @@ app.layout = html.Div([
 @app.callback(dash.dependencies.Output('output-color', 'children'),
               [dash.dependencies.Input('dropdown-color', 'value')])
 def callback_color(dropdown_value):
+C
     return "The ssaelected color is %s." % dropdown_value
 
 
