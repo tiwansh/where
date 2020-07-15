@@ -2,7 +2,6 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 
-
 from django_plotly_dash import DjangoDash
 
 app = DjangoDash('SimpleExample')  # replaces dash.Dash
@@ -28,7 +27,6 @@ app.layout = html.Div([
 @app.callback(dash.dependencies.Output('output-color', 'children'),
               [dash.dependencies.Input('dropdown-color', 'value')])
 def callback_color(dropdown_value):
-C
     return "The ssaelected color is %s." % dropdown_value
 
 

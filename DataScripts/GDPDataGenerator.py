@@ -1,6 +1,9 @@
 from datetime import datetime
 
 import requests
+from sqlalchemy.orm import sessionmaker
+
+from DBTables.GDPTable import engine, GDP
 
 
 def get_year_list():
@@ -10,7 +13,7 @@ def get_year_list():
     return range(1960, current_year)
 
 
-def get_gdp_data_of_country(country_iso_code: str):
+def get_gdp_data_of_country(country_iso_code: str) -> dict:
     WORLDBANK_API = f"http://api.worldbank.org/v2/country/{country_iso_code}/indicator/NY.GDP.MKTP.CD?date="  # YEAR to be appended later
 
     year_gdp_dict = dict()
@@ -21,7 +24,7 @@ def get_gdp_data_of_country(country_iso_code: str):
         response = requests.get(WORLDBANK_API + str(year) + "&format=json")  # To get json response for respective year
         year_gdp_dict[year] = response.json()[1][0]['value']
 
-    return year_gdp_dict
+    return {country_iso_code: year_gdp_dict}
 
 
 # 2 character iso codes of various countries
@@ -32,3 +35,18 @@ CHINA_ISO_CODE = "cn"
 india_gdp_data = get_gdp_data_of_country(INDIA_ISO_CODE)
 us_gdp_data = get_gdp_data_of_country(US_ISO_CODE)
 china_gdp_data = get_gdp_data_of_country(CHINA_ISO_CODE)
+
+all_gdp_data = dict()
+all_gdp_data.update(india_gdp_data)
+all_gdp_data.update(us_gdp_data)
+all_gdp_data.update(china_gdp_data)
+
+# Populate the GDP in the tables
+Session = sessionmaker(bind = engine)
+postgres_session = Session()
+
+for country, gdp_data in all_gdp_data.items():
+    for year, gdp in gdp_data.items():
+        gdp_obj = GDP(country = country, year = year, gdp = gdp)
+        postgres_session.add(gdp_obj)
+        postgres_session.commit()
