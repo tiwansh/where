@@ -7,4 +7,4 @@ def homepage(request):
 
 
 def gdp_view(request):
-    return render(request, "gdp_template.html")
+    return render(request, "base.html")

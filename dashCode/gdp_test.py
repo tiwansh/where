@@ -1,19 +1,12 @@
+from random import randrange
+
 import dash_core_components as dcc
 import dash_html_components as html
-import numpy as np
 import plotly.graph_objects as go
 from django_plotly_dash import DjangoDash
 
-from DBTables.GDPTable import GDP
-from global_session import postgres_session
-
-np.random.seed(1)
-
-N = 100
-random_x = np.linspace(0, 1, N)
-random_y0 = np.random.randn(N) + 5
-random_y1 = np.random.randn(N)
-random_y2 = np.random.randn(N) - 5
+from DBTables.GDPTable import GDP, HistoricalGDP
+from sqlalchemy_globals import postgres_session
 
 app = DjangoDash("gdp_app")
 
@@ -56,3 +49,34 @@ app.layout = html.Div([
 #     ),
 #
 # ])
+
+new_app = DjangoDash("gdp_historic_share_app")
+
+fig1 = go.Figure()
+
+regions = [data.region for data in postgres_session.query(HistoricalGDP).with_entities(HistoricalGDP.region).distinct()]
+year_list = sorted(
+    [data.year for data in postgres_session.query(HistoricalGDP).with_entities(HistoricalGDP.year).distinct()])
+for region in regions:
+    fig1.add_trace(go.Scatter(x = year_list, y = [data.percent * 100.0 for data in
+                                                  postgres_session.query(HistoricalGDP).filter_by(
+                                                      region = region).order_by(HistoricalGDP.year.asc())],
+                              mode = 'lines',
+                              line = dict(width = 0.5,
+                                          color = f'rgb({randrange(0, 255)}, {randrange(0, 255)}, {randrange(0, 255)})'),
+                              stackgroup = 'one',
+                              name = region))
+
+new_app.layout = html.Div([
+    dcc.Graph(
+        id = 'example1',
+        figure = fig1,
+        responsive = True,
+        config = {
+            'displayModeBar': False,
+            # 'modeBarButtonsToRemove': ['select2d', 'resetScale2d', 'pan2d', 'lasso2d']
+        }
+
+    ),
+
+])

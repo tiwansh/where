@@ -1,9 +1,9 @@
 from datetime import datetime
 
 import requests
-from sqlalchemy.orm import sessionmaker
 
-from DBTables.GDPTable import engine, GDP
+from DBTables.GDPTable import GDP
+from sqlalchemy_globals import postgres_session
 
 
 def get_year_list():
@@ -42,8 +42,6 @@ all_gdp_data.update(us_gdp_data)
 all_gdp_data.update(china_gdp_data)
 
 # Populate the GDP in the tables
-Session = sessionmaker(bind = engine)
-postgres_session = Session()
 
 for country, gdp_data in all_gdp_data.items():
     for year, gdp in gdp_data.items():

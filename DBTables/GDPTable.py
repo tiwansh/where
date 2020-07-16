@@ -1,10 +1,9 @@
 import datetime
 
-from sqlalchemy import create_engine, Column, String, Integer, Float, DateTime
+from sqlalchemy import Column, String, Integer, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
-engine = create_engine('postgresql://postgres:pass1234@localhost/where')
-connection = engine.connect()
+from sqlalchemy_globals import engine
 
 Base = declarative_base()
 
@@ -17,4 +16,17 @@ class GDP(Base):
     timestamp = Column(DateTime, default = datetime.datetime.utcnow)
 
 
-# Base.metadata.create_all(engine)
+class HistoricalGDP(Base):
+    __tablename__ = 'historical_gdp'
+    region = Column(String, primary_key = True)
+    year = Column(Integer, primary_key = True)
+    gdp = Column(Float)
+    percent = Column(Float)
+    timestamp = Column(DateTime, default = datetime.datetime.utcnow)
+
+
+def recreate_database():
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
+
+# recreate_database()
